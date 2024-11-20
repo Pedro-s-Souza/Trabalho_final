@@ -22,12 +22,38 @@ struct evento{
 
 };
 
+void desarquiva(struct evento *pega, int n);
+void novoEvento(struct evento *novo);
+void printaStruct(struct evento *print);
+void arquiva(struct evento guarda);
+void flush_in();
+
 int main(){
-    struct evento novo;
+    FILE *cb;
+    int n = 0;
+    char c;
+    if ((cb=fopen ("dados.txt", "r")) != NULL) { 
+        while( (c=fgetc(cb)) != EOF) {
+            if (c=='$') n++;
+        }
+    }
+    fclose(cb);
     int menu = 0, repete = 0;
-    //Fim da secao das variaveis, comeco do menu
+    struct evento event, *v, *i;
+    v = malloc(sizeof(struct evento) * n);
     
+    //----------------------------
+    
+
+    //Fim da secao das variaveis, comeco do menu
+
+
+
+
+    printf("Há %i Structs.", n);
+    desarquiva(&v, n);
     while (repete != 1){
+        menu = 0; repete = 0;
         while(menu < 1 || menu > 5){
             printf("\n------------------------------------------------\n");
             printf("Menu \n\n1 - Cadastrar novo evento \n2 - Mostrar todos os eventos \n3 - Pesquisa de eventos por data \n"); 
@@ -41,29 +67,16 @@ int main(){
         }    
         switch (menu)
         {
-        case 1:
-            printf("digite o dia do evento: (Dia/Mes/Ano)");
-            scanf("%i", &novo.data.dia);
-            scanf("%i", &novo.data.mes);
-            scanf("%i", &novo.data.ano);
-            printf("digite o horario de inicio do evento: (Hora:Minuto)");
-            scanf("%i", &novo.hInicio.hora);
-            scanf("%i", &novo.hInicio.minuto);
-            printf("digite o horario de fim do evento: (Hora:Minuto)");
-            scanf("%i", &novo.hFim.hora);
-            scanf("%i", &novo.hFim.minuto);
-            flush_in();
-            printf("Digite a descricao do evento");
-            gets(novo.descricao);
-            flush_in();
-            printf("Digite o local do evento");
-            gets(novo.local);
-            printaStruct(novo);
-            arquiva(novo);
+        case 1://Cria novo evento
+            novoEvento(&event);
+            printaStruct(&event);
+            arquiva(event);
             break;
 
         case 2:
-            printf("caso 2 %i", menu);
+            for(i = v; i < v + n; i++){
+                printaStruct(&i);
+            }
             break;
 
         case 3:
@@ -78,21 +91,94 @@ int main(){
             printf("caso default %i", menu);
             break;
         }
-        printf("se deseja voltar ao menu, digite 0, se deseja sair, digite 1");
+        printf("se deseja voltar ao menu, digite 0, se deseja sair, digite 1: ");
         scanf("%i", &repete);
     }
 
     return 0;
 }
 
+void desarquiva(struct evento *pega, int n){
+    FILE *da;
+    char a;
+    struct evento *i;
+    if ((da = fopen("dados.txt", "r")) != NULL){
+        for(i = pega; i < pega + n; i++){
+            fscanf(da, "%i\n", &i->data.dia);
+            fscanf(da, "%i\n", &i->data.mes);
+            fscanf(da, "%i\n", &i->data.ano);
+            fscanf(da, "%i", &i->hInicio.hora);
+            fscanf(da, "%i", &i->hInicio.minuto);
+            fscanf(da, "%i", &i->hFim.hora);
+            fscanf(da, "%i", &i->hFim.minuto);
+            fscanf(da, "%s", i->descricao);
+            fscanf(da, "%s", i->local);
+            fscanf(da, "$", &a);
 
+        }
+    }
+    fclose(da);
+}
 
-void printaStruct(struct evento print){
-    printf("Data: %02d/%02d/%4d\n", print.data.dia, print.data.mes, print.data.ano);
-    printf("Inicio: %02d:%02d\n", print.hInicio.hora, print.hInicio.minuto);
-    printf("Fim: %02d:%02d\n", print.hFim.hora, print.hFim.minuto);
-    printf("Descricao: %s\n", print.descricao);
-    printf("Local: %s\n", print.local);
+void novoEvento(struct evento *novo){
+    printf("digite o dia do evento(Dia/Mes/Ano)\n");
+    printf("Dia: ");
+    scanf("%i", &novo->data.dia);
+    printf("\nMes: ");
+    do{
+        scanf("%i", &novo->data.mes);
+        if(novo->data.mes < 1 || novo->data.mes > 12){
+            printf("Mes invalido, digite novamente\n");
+        }
+    }while(novo->data.mes < 1 || novo->data.mes > 12);
+    printf("\nAno: ");
+    scanf("%i", &novo->data.ano);
+    printf("digite o horario de inicio do evento(Horas:Minutos)\n");
+    printf("Horas: ");
+    do{
+        scanf("%i", &novo->hInicio.hora);
+        if(novo->hInicio.hora < 0 || novo->hInicio.hora > 24){
+            printf("Hora invalida, digite novamente\n");
+        }
+    }while (novo->hInicio.hora < 0 || novo->hInicio.hora > 24);
+    printf("\nMinutos: ");
+    do{
+        scanf("%i", &novo->hInicio.minuto);
+        if(novo->hInicio.minuto < 0 || novo->hInicio.minuto > 60){
+            printf("Minuto invalido, digite novamente\n");
+        }
+    }while (novo->hInicio.minuto < 0 || novo->hInicio.minuto > 60);
+    printf("digite o horario de fim do evento(Horas:Minutos)\n");
+    printf("Horas: ");
+        do{
+        scanf("%i", &novo->hFim.hora);
+        if(novo->hFim.hora < 0 || novo->hFim.hora > 24){
+            printf("Hora invalida, digite novamente\n");
+        }
+    }while (novo->hFim.hora < 0 || novo->hFim.hora > 24);
+    printf("\nMinutos: ");
+    do{
+        scanf("%i", &novo->hFim.minuto);
+        if(novo->hFim.minuto < 0 || novo->hFim.minuto > 60){
+            printf("Minuto invalido, digite novamente\n");
+        }
+    }while (novo->hFim.minuto < 0 || novo->hFim.minuto > 60);
+    flush_in();
+    printf("\nDigite a descricao do evento: ");
+    gets(novo->descricao);
+    printf("\nDigite o local do evento: ");
+    gets(novo->local);
+}
+
+void printaStruct(struct evento *print){
+    printf("\n------------------------------------------------\n");
+    printf("\nInformacoes do novo evento:\n\n");
+    printf("Data: %02d/%02d/%4d\n", print->data.dia, print->data.mes, print->data.ano);
+    printf("Inicio: %02d:%02d\n", print->hInicio.hora, print->hInicio.minuto);
+    printf("Fim: %02d:%02d\n", print->hFim.hora, print->hFim.minuto);
+    printf("Descricao: %s\n", print->descricao);
+    printf("Local: %s\n", print->local);
+    printf("\n------------------------------------------------\n\n");
 }
 
 void arquiva(struct evento guarda){
@@ -103,6 +189,7 @@ void arquiva(struct evento guarda){
         fprintf(db, "\n\n%i\n%i", guarda.hFim.hora, guarda.hFim.minuto);
         fprintf(db, "\n\n%s", guarda.descricao);
         fprintf(db, "\n\n%s", guarda.local);
+        fprintf(db, "\n$\n");
     }
     fclose(db);
 }
