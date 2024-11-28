@@ -22,7 +22,6 @@ struct evento{
 
 };
 
-//void desarquiva(struct evento *pega, int n);
 void novoEvento(struct evento *novo);
 void novoDia(struct dia *data);
 void printaStruct(struct evento *print);
@@ -30,12 +29,12 @@ void arquiva(struct evento *guarda, FILE *db);
 int contaEventos();
 int bissexto(int ano);
 void organiza(struct evento *v, int n); 
-//int compara(struct evento *a, struct evento *b, int n); arrumar mais tarde
+int compara(struct evento *a, struct evento *b, int n);
 void flush_in();
 
 int main(){
     int n, m, c, d;
-    char a[2];
+    char a[2], descri[10];
     int menu, repete;
     struct evento event, *v, *i;
     struct dia dataa;
@@ -63,9 +62,6 @@ int main(){
 
 
     //Fim da coleta de dados, comeco do menu
-
-
-
     
     while (repete != 1){
         menu = 0; repete = 0;
@@ -84,11 +80,11 @@ int main(){
             case 1://Cria novo evento
                 novoEvento(&event);
                 printf("\nInformacoes do novo evento:\n");
-                printaStruct(&event);
-                c = 0; //compara(&event, v, n);
+                c = compara(&event, v, n);
                 if (c == -1){
                     printf("Ja existe um evento igual.\n");
                 } else{
+                    printaStruct(&event);
                     v = realloc(v, sizeof(struct evento) * (n + 1));
                     n++;
                     m = n - 1;
@@ -118,7 +114,7 @@ int main(){
             case 3://Pesquisa eventos conforme data
             d = 0;
                 if(n != 0){
-                    printf("digite a data do evento a ser procurado(Ano/Mes/Dia)\n");
+                    printf("digite a data do evento a ser procurado(Dia/Mes/Ano)\n");
                     novoDia(&dataa);                    
                     for(i = v; i < v + n; i++){
                         if(dataa.dia == i->data.dia && dataa.mes == i->data.mes && dataa.ano == i->data.ano){
@@ -130,12 +126,17 @@ int main(){
                 } else {printf("nao ha nada armazenado.\n");}
                 break;
 
-            case 4:
+            case 4://Pesquisa eventos conforme descrição
                 if(n != 0){
+                    printf("digite a descricao do evento a ser procurado\n");
+                    scanf("%s", &descri);                    
                     for(i = v; i < v + n; i++){
-                        printaStruct(i);
+                        if(strcmp(descri, i->descricao) == 0){
+                            printaStruct(i);  
+                            d++;
+                        }
                     }
-                    printf("Nao ta pronto");
+                    if(d < 1) printf("Nao foram encontrados eventos com essa descricao0.");
                 } else {printf("nao ha nada armazenado.\n");}
                 break;
 
@@ -150,12 +151,8 @@ int main(){
     return 0;
 }
 
-//void desarquiva(struct evento *pega, int n){
-
-//}
-
 void novoEvento(struct evento *novo){//Registra um evento novo
-    printf("digite a data do evento(Ano/Mes/Dia)\n");
+    printf("digite a data do evento(Dia/Mes/Ano)\n");
     novoDia(&novo->data);
     printf("digite o horario de inicio do evento(Horas:Minutos)\n");
     printf("Horas: ");
@@ -197,9 +194,8 @@ void novoEvento(struct evento *novo){//Registra um evento novo
 void novoDia(struct dia *data){//Registra uma data
     int cheque = 0;
     int anoo;
-    printf("Ano: ");
-    scanf("%i", &data->ano);
-    flush_in();
+    printf("Dia: ");
+    scanf("%i", &data->dia);
     printf("\nMes: ");
     do{
         scanf("%i", &data->mes);
@@ -207,19 +203,20 @@ void novoDia(struct dia *data){//Registra uma data
             printf("Mes invalido, digite novamente\n");
         }
     }while(data->mes < 1 || data->mes > 12);
-    //-----------------------
-    printf("\nDia: ");
+    printf("\nAno: ");
+    scanf("%i", &data->ano);
     do{
-        scanf("%i", &data->dia);
         if(data->mes == 1 || data->mes == 3 || data->mes == 5 || data->mes == 7 || data->mes == 8 || data->mes == 10 || data->mes == 12){
             if(data->dia < 0 && data->dia > 31){
                 printf("dia invalido, digite novamente\n");
                 cheque = 0;
+                scanf("%i", &data->dia);
             } else cheque = 1;
         } else if(data->mes == 4 || data->mes == 6 || data->mes == 9 || data->mes == 12){
             if(data->dia < 0 && data->dia > 30){
                 printf("dia invalido, digite novamente\n");
                 cheque = 0;
+                scanf("%i", &data->dia);
             } else cheque = 1;
         } else{
             anoo = bissexto(data->ano);
@@ -227,18 +224,20 @@ void novoDia(struct dia *data){//Registra uma data
                 if(data->dia < 0 && data->dia > 29){
                     printf("dia invalido, digite novamente\n");
                     cheque = 0;
+                    scanf("%i", &data->dia);
                 } else cheque = 1;    
             } else {
                 if(data->dia < 0 && data->dia > 28){
                     printf("dia invalido, digite novamente\n");
                     cheque = 0;
+                    scanf("%i", &data->dia);
                 } else cheque = 1;
             } 
         }
     }while(cheque != 1);
 }
 
-void printaStruct(struct evento *print){
+void printaStruct(struct evento *print){//Pinta uma struct e todos os seus dados
     printf("\n--------------------------------------\n");
     printf("Data: %02d/%02d/%4d\n", print->data.dia, print->data.mes, print->data.ano);
     printf("Inicio: %02d:%02d\n", print->hInicio.hora, print->hInicio.minuto);
@@ -310,35 +309,28 @@ void organiza(struct evento *v, int n){//organiza o vetor, baseado em data e hor
     }
 }
 
-int bissexto(int ano){
+int bissexto(int ano){//Checa se o ano é bissexto
 	if((((ano%4)==0) && ((ano%100) !=0) || ((ano%400)==0)))
 		return 1;
 	else
 		return 0;
 }
 
-/** arrumar mais tarde 
-int compara(struct evento *a, struct evento *b, int n){
+int compara(struct evento *a, struct evento *b, int n){//compara com eventos existentes, para ver se há repetições
     struct evento *i;
-    int cont = 0, max = 0;
+    int cont = 0;
     for(i = b; i < b + n; i++){
-        if(a->data.dia == i->data.dia) cont++;
-        if(a->data.mes == i->data.mes) cont++;
-        if(a->data.ano == i->data.ano) cont++;
-        if(a->hInicio.hora == i->hInicio.hora) cont++;
-        if(a->hInicio.minuto == i->hInicio.minuto) cont++;
-        if(a->hFim.hora == i->hFim.hora) cont++;
-        if(a->hFim.minuto == i->hFim.minuto) cont++;
-        if(cont > max) max = cont;
+        if(a->data.dia == i->data.dia && a->data.mes == i->data.mes && a->data.ano == i->data.ano && a->hInicio.hora == i->hInicio.hora &&
+        a->hInicio.minuto == i->hInicio.minuto && a->hFim.hora == i->hFim.hora && a->hFim.minuto == i->hFim.minuto);{
+            cont = 1;
+        }
     }
-    if (max = 7){
+    if (cont = 1){
         return -1;
     } else {return 0;}
 }
-**/
 
-//Limpa Buffer
-void flush_in(){
+void flush_in(){//Limpa Buffer
     int ch;
     while( (ch = fgetc(stdin)) != EOF && ch != '\n' ){}
 }
