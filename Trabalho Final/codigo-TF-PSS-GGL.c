@@ -42,7 +42,7 @@ void empurrador(struct evento *v, int j, int n);
 void flush_in();
 
 int main(){
-    int n, m, c, d, posdel, sn, r;
+    int n, m, c, d, posdel, sn, r, bloque;
     char a[2], descri[10];
     int menu, repete;
     struct evento event, *v, *i;
@@ -151,6 +151,7 @@ int main(){
                 break;
 
             default:
+                bloque = 0;
                 if(n != 0){
                     printf("digite a data do evento a ser excluido(Dia/Mes/Ano)\n");
                     novoDia(&dataa);
@@ -159,20 +160,26 @@ int main(){
                     for(i = v; i < v + n; i++){
                         if(dataa.dia == i->data.dia && dataa.mes == i->data.mes && dataa.ano == i->data.ano && horaa.hora == i->hInicio.hora && horaa.minuto == i->hInicio.minuto){
                             if(r != 1){
-                                printaStruct(i);  
-                                printf("\nTem certeza que deseja deletar este evento? (digite 0 para sim, 1 para nao) ");
-                                scanf("%i", &sn);
-                                if (sn == 0){
-                                    posdel = i - v;
-                                    r = 1;
+                                printaStruct(i);
+                                if(i->estado.jafoi == 1){
+                                    printf("\nEsse evento ja acabou, nao pode ser deletado.\n");
+                                    bloque = 1;
                                 } else {
-                                    printf("\nEntendido, evento mantido.");
+                                    printf("\nTem certeza que deseja deletar este evento? (digite 0 para sim, 1 para nao) ");
+                                    scanf("%i", &sn);
+                                    if (sn == 0){
+                                        posdel = i - v;
+                                        r = 1;
+                                    } else {
+                                        printf("\nEntendido, evento mantido.");
+                                    }
                                 }
+                                
                             }
                             d++;
                         }
                     }
-                    if(d < 1){
+                    if(d < 1 || bloque == 1){
                         printf("Nao foram encontrados eventos nesta data.\n");
                     } else {
                         empurrador(v, posdel, n);
@@ -185,7 +192,7 @@ int main(){
                 
                 break;
         }
-        printf("se deseja voltar ao menu, digite 0, se deseja sair, digite 1: ");
+        printf("Se deseja voltar ao menu, digite 0, se deseja sair, digite 1: ");
         scanf("%i", &repete);
     }
     organiza(v, n);
@@ -294,9 +301,9 @@ void printaStruct(struct evento *print){//Pinta uma struct e todos os seus dados
         printf("O Evento ja acabou.");
     } else {
         if(print->preco.gratis == 1){
-            printf("Preco de entrada: Gratuito\n");
+            printf("Preco de entrada: Gratuito");
         } else {
-            printf("Preco de entrada: R$%.2f\n", print->preco.real);
+            printf("Preco de entrada: R$%.2f", print->preco.real);
         }
     }
     
