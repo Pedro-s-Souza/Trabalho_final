@@ -30,7 +30,7 @@ void arquiva(struct evento *guarda, FILE *db);
 int contaEventos();
 int bissexto(int ano);
 void organiza(struct evento *v, int n); 
-//int compara(struct evento *a, struct evento *b, int n);
+int compara(struct evento *a, struct evento *b, int n);
 void empurrador(struct evento *v, int j, int n);
 void flush_in();
 
@@ -82,11 +82,11 @@ int main(){
         switch (menu){
             case 1://Cria novo evento
                 novoEvento(&event);
-                printf("\nInformacoes do novo evento:\n");
-                c = 0;  //compara(&event, v, n); Arrumar depois
+                c = compara(&event, v, n); //Arrumar depois
                 if (c == -1){
                     printf("Ja existe um evento igual.\n");
                 } else{
+                    printf("\nInformacoes do novo evento:\n");
                     printaStruct(&event);
                     v = realloc(v, sizeof(struct evento) * (n + 1));
                     n++;
@@ -341,18 +341,18 @@ int bissexto(int ano){//Checa se o ano é bissexto
 		return 0;
 }
 
-/**int compara(struct evento *a, struct evento *b, int n){//arrumar depois
+int compara(struct evento *a, struct evento *b, int n){//compara com eventos já existentes
     struct evento *i;
     int cont = 0;
     for(i = b; i < b + n; i++){
-        if(a->data.dia == i->data.dia && a->data.mes == i->data.mes && a->data.ano == i->data.ano && a->hInicio.hora == i->hInicio.hora && a->hInicio.minuto == i->hInicio.minuto && a->hFim.hora == i->hFim.hora && a->hFim.minuto == i->hFim.minuto);{
+        if(a->data.dia == i->data.dia && a->data.mes == i->data.mes && a->data.ano == i->data.ano && a->hInicio.hora == i->hInicio.hora && a->hInicio.minuto == i->hInicio.minuto && a->hFim.hora == i->hFim.hora && a->hFim.minuto == i->hFim.minuto){
             cont = 1;
         }
     }
-    if (cont = 1){
+    if (cont == 1){
         return -1;
     } else {return 0;}
-}**/
+}
 
 void empurrador(struct evento *v, int j, int n){//Auxilia a remoção de eventos
     struct evento *i, aux;
