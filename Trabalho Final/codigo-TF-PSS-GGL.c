@@ -24,20 +24,23 @@ struct evento{
 
 void novoEvento(struct evento *novo);
 void novoDia(struct dia *data);
+void novaHora(struct horario *horas);
 void printaStruct(struct evento *print);
 void arquiva(struct evento *guarda, FILE *db);
 int contaEventos();
 int bissexto(int ano);
 void organiza(struct evento *v, int n); 
-int compara(struct evento *a, struct evento *b, int n);
+//int compara(struct evento *a, struct evento *b, int n);
+void empurrador(struct evento *v, int j, int n);
 void flush_in();
 
 int main(){
-    int n, m, c, d;
+    int n, m, c, d, posdel, sn, r;
     char a[2], descri[10];
     int menu, repete;
     struct evento event, *v, *i;
     struct dia dataa;
+    struct horario horaa;
 
     //Fim da secao das variaveis, comeco da coleta de dados
 
@@ -64,7 +67,7 @@ int main(){
     //Fim da coleta de dados, comeco do menu
     
     while (repete != 1){
-        menu = 0; repete = 0;
+        menu = 0; repete = 0; r = 0;
         while(menu < 1 || menu > 5){
             printf("\n------------------------------------------------\n");
             printf("Menu \n\n1 - Cadastrar novo evento \n2 - Mostrar todos os eventos \n3 - Pesquisa de eventos por data \n"); 
@@ -80,7 +83,7 @@ int main(){
             case 1://Cria novo evento
                 novoEvento(&event);
                 printf("\nInformacoes do novo evento:\n");
-                c = compara(&event, v, n);
+                c = 0;  //compara(&event, v, n); Arrumar depois
                 if (c == -1){
                     printf("Ja existe um evento igual.\n");
                 } else{
@@ -92,14 +95,6 @@ int main(){
                         *i = event;
                         printf("Salvo com sucesso!\n\n");
                     }
-                    organiza(v, n);
-                    FILE *db;
-                    if ((db = fopen ("dados.txt", "w")) != NULL){
-                        for(i = v; i < v + n; i++){
-                            arquiva(i,db);
-                        }
-                    }
-                    fclose(db);
                 }
                 break;
 
@@ -141,12 +136,51 @@ int main(){
                 break;
 
             default:
-                printf("caso default %i", menu);
+                if(n != 0){
+                    printf("digite a data do evento a ser excluido(Dia/Mes/Ano)\n");
+                    novoDia(&dataa);
+                    printf("digite o horario de inicio do evento a ser excluido(Hora:Minuto)\n");
+                    novaHora(&horaa);          
+                    for(i = v; i < v + n; i++){
+                        if(dataa.dia == i->data.dia && dataa.mes == i->data.mes && dataa.ano == i->data.ano && horaa.hora == i->hInicio.hora && horaa.minuto == i->hInicio.minuto){
+                            if(r != 1){
+                                printaStruct(i);  
+                                printf("\nTem certeza que deseja deletar este evento? (digite 0 para sim, 1 para nao) ");
+                                scanf("%i", &sn);
+                                if (sn == 0){
+                                    posdel = i - v;
+                                    r = 1;
+                                } else {
+                                    printf("\nEntendido, evento mantido.");
+                                }
+                            }
+                            d++;
+                        }
+                    }
+                    if(d < 1){
+                        printf("Nao foram encontrados eventos nesta data.\n");
+                    } else {
+                        empurrador(v, posdel, n);
+                        v = realloc(v, sizeof(struct evento) * (n - 1));
+                        n = n - 1;
+                        printf("\nEvento deletado com sucesso.\n");
+                    }
+                    
+                } else {printf("nao ha nada armazenado.\n");}
+                
                 break;
         }
         printf("se deseja voltar ao menu, digite 0, se deseja sair, digite 1: ");
         scanf("%i", &repete);
     }
+    organiza(v, n);
+    FILE *db;
+    if ((db = fopen ("dados.txt", "w")) != NULL){
+        for(i = v; i < v + n; i++){
+            arquiva(i,db);
+        }
+    }
+    fclose(db);
     free(v);
     return 0;
 }
@@ -155,35 +189,9 @@ void novoEvento(struct evento *novo){//Registra um evento novo
     printf("digite a data do evento(Dia/Mes/Ano)\n");
     novoDia(&novo->data);
     printf("digite o horario de inicio do evento(Horas:Minutos)\n");
-    printf("Horas: ");
-    do{
-        scanf("%i", &novo->hInicio.hora);
-        if(novo->hInicio.hora < 0 || novo->hInicio.hora > 24){
-            printf("Hora invalida, digite novamente\n");
-        }
-    }while (novo->hInicio.hora < 0 || novo->hInicio.hora > 24);
-    printf("\nMinutos: ");
-    do{
-        scanf("%i", &novo->hInicio.minuto);
-        if(novo->hInicio.minuto < 0 || novo->hInicio.minuto > 60){
-            printf("Minuto invalido, digite novamente\n");
-        }
-    }while (novo->hInicio.minuto < 0 || novo->hInicio.minuto > 60);
+    novaHora(&novo->hInicio);
     printf("digite o horario de fim do evento(Horas:Minutos)\n");
-    printf("Horas: ");
-        do{
-        scanf("%i", &novo->hFim.hora);
-        if(novo->hFim.hora < 0 || novo->hFim.hora > 24){
-            printf("Hora invalida, digite novamente\n");
-        }
-    }while (novo->hFim.hora < 0 || novo->hFim.hora > 24);
-    printf("\nMinutos: ");
-    do{
-        scanf("%i", &novo->hFim.minuto);
-        if(novo->hFim.minuto < 0 || novo->hFim.minuto > 60){
-            printf("Minuto invalido, digite novamente\n");
-        }
-    }while (novo->hFim.minuto < 0 || novo->hFim.minuto > 60);
+    novaHora(&novo->hFim);
     flush_in();
     printf("\nDigite a descricao do evento: ");
     gets(novo->descricao);
@@ -235,6 +243,23 @@ void novoDia(struct dia *data){//Registra uma data
             } 
         }
     }while(cheque != 1);
+}
+
+void novaHora(struct horario *horas){//Registra um horario
+    printf("Horas: ");
+    do{
+        scanf("%i", &horas->hora);
+        if(horas->hora < 0 || horas->hora > 24){
+            printf("Hora invalida, digite novamente\n");
+        }
+    }while (horas->hora < 0 || horas->hora > 24);
+    printf("\nMinutos: ");
+    do{
+        scanf("%i", &horas->minuto);
+        if(horas->minuto < 0 || horas->minuto > 60){
+            printf("Minuto invalido, digite novamente\n");
+        }
+    }while (horas->minuto < 0 || horas->minuto > 60);
 }
 
 void printaStruct(struct evento *print){//Pinta uma struct e todos os seus dados
@@ -316,18 +341,26 @@ int bissexto(int ano){//Checa se o ano é bissexto
 		return 0;
 }
 
-int compara(struct evento *a, struct evento *b, int n){//compara com eventos existentes, para ver se há repetições
+/**int compara(struct evento *a, struct evento *b, int n){//arrumar depois
     struct evento *i;
     int cont = 0;
     for(i = b; i < b + n; i++){
-        if(a->data.dia == i->data.dia && a->data.mes == i->data.mes && a->data.ano == i->data.ano && a->hInicio.hora == i->hInicio.hora &&
-        a->hInicio.minuto == i->hInicio.minuto && a->hFim.hora == i->hFim.hora && a->hFim.minuto == i->hFim.minuto);{
+        if(a->data.dia == i->data.dia && a->data.mes == i->data.mes && a->data.ano == i->data.ano && a->hInicio.hora == i->hInicio.hora && a->hInicio.minuto == i->hInicio.minuto && a->hFim.hora == i->hFim.hora && a->hFim.minuto == i->hFim.minuto);{
             cont = 1;
         }
     }
     if (cont = 1){
         return -1;
     } else {return 0;}
+}**/
+
+void empurrador(struct evento *v, int j, int n){//Auxilia a remoção de eventos
+    struct evento *i, aux;
+    for(i = v+j; i < v + n -1; i++){
+		aux = *(i + 1);
+		*(i + 1) = *i;
+		*i = aux;
+	}
 }
 
 void flush_in(){//Limpa Buffer
