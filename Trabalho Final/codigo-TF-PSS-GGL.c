@@ -19,7 +19,14 @@ struct evento{
     struct horario hFim;
     char descricao[10];
     char local[10];
-
+    union{
+        float real;
+        int gratis;
+    } preco;
+    union {
+        int naofoi;
+        int jafoi;
+    } estado;
 };
 
 void novoEvento(struct evento *novo);
@@ -49,15 +56,23 @@ int main(){
     FILE *da;
     if ((da = fopen("dados.txt", "r")) != NULL){
         for(i = v; i < v + n; i++){
-            fscanf(da, "%i\n", &i->data.dia);
-            fscanf(da, "%i\n", &i->data.mes);
-            fscanf(da, "%i\n", &i->data.ano);
+            fscanf(da, "%i", &i->data.dia);
+            fscanf(da, "%i", &i->data.mes);
+            fscanf(da, "%i", &i->data.ano);
             fscanf(da, "%i", &i->hInicio.hora);
             fscanf(da, "%i", &i->hInicio.minuto);
             fscanf(da, "%i", &i->hFim.hora);
             fscanf(da, "%i", &i->hFim.minuto);
             fscanf(da, "%s", i->descricao);
             fscanf(da, "%s", i->local);
+            fscanf(da, "%i", &i->estado.naofoi);
+            if(i->estado.naofoi > 0){
+                i->estado.jafoi = 1;
+            }
+            fscanf(da, "%f", &i->preco.real);
+            if(i->preco.real == 0){
+                i->preco.gratis = 1;
+            }
             fscanf(da, "%s", a);
         }
     }
@@ -197,6 +212,12 @@ void novoEvento(struct evento *novo){//Registra um evento novo
     gets(novo->descricao);
     printf("\nDigite o local do evento: ");
     gets(novo->local);
+    novo->estado.naofoi = 0;
+    printf("\nDigite o preco da entrada: ");
+    scanf("%f", &novo->preco.real);
+    if (novo->preco.real == 0.0){
+        novo->preco.gratis = 1;
+    }
 }
 
 void novoDia(struct dia *data){//Registra uma data
@@ -268,7 +289,17 @@ void printaStruct(struct evento *print){//Pinta uma struct e todos os seus dados
     printf("Inicio: %02d:%02d\n", print->hInicio.hora, print->hInicio.minuto);
     printf("Fim: %02d:%02d\n", print->hFim.hora, print->hFim.minuto);
     printf("Descricao: %s\n", print->descricao);
-    printf("Local: %s", print->local);
+    printf("Local: %s\n", print->local);
+    if(print->estado.naofoi != 0 || print->estado.jafoi){
+        printf("O Evento ja acabou.");
+    } else {
+        if(print->preco.gratis == 1){
+            printf("Preco de entrada: Gratuito\n");
+        } else {
+            printf("Preco de entrada: R$%.2f\n", print->preco.real);
+        }
+    }
+    
     printf("\n--------------------------------------\n\n");
 }
 
@@ -278,6 +309,16 @@ void arquiva(struct evento *guarda, FILE *db){//deposita os dados no arquivo
         fprintf(db, " %i %i", guarda->hFim.hora, guarda->hFim.minuto);
         fprintf(db, " %s", guarda->descricao);
         fprintf(db, " %s", guarda->local);
+        if(guarda->estado.naofoi == 0){
+            fprintf(db," 0");
+        } else {
+            fprintf(db," 1");
+        }
+        if(guarda->preco.gratis == 1){
+            fprintf(db," 0");
+        } else {
+            fprintf(db, " %.2f", guarda->preco.real);
+        }
         fprintf(db, " $ ");
 }
 
