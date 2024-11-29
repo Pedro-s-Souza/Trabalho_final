@@ -1,1 +1,1 @@
-10 10 2000 10 20 10 40 descric ao 1 0 $ 10 3 2003 10 10 10 10 des cricao 1 0 $ 10 3 2003 12 23 10 20 descri local 1 0 $ 5 5 2005 5 5 5 55 des lol 1 10.00 $ 
+29 11 2024 7 0 23 59 Entrega_do_TF_de_LPG Online 1 0 $ 25 12 2024 10 0 16 30 Celebracao_Natal_Udesc Campus_Udesc_CCT 0 30.00 $ 1 1 2025 0 1 1 0 Ano_Novo! Casa 0 0 $ 10 7 2025 12 30 17 45 Torneio_BCC_x_EM Ginasio_Udesc 0 5.00 $ 18 9 2025 13 0 16 0 Torneio_Jiu_Jitsu Sala_Tatame 0 15.00 $ 

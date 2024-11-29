@@ -17,8 +17,8 @@ struct evento{
     struct dia data;
     struct horario hInicio;
     struct horario hFim;
-    char descricao[10];
-    char local[10];
+    char descricao[30];
+    char local[30];
     union{
         float real;
         int gratis;
@@ -97,7 +97,9 @@ int main(){
         switch (menu){
             case 1://Cria novo evento
                 novoEvento(&event);
-                c = compara(&event, v, n); //Arrumar depois
+                if(n != 0){
+                    c = compara(&event, v, n);
+                }
                 if (c == -1){
                     printf("Ja existe um evento igual.\n");
                 } else{
@@ -111,6 +113,7 @@ int main(){
                         printf("Salvo com sucesso!\n\n");
                     }
                 }
+                organiza(v, n);
                 break;
 
             case 2://Mostra todos os eventos
@@ -150,7 +153,7 @@ int main(){
                 } else {printf("nao ha nada armazenado.\n");}
                 break;
 
-            default:
+            default://Caso 5, Exclúi um evento
                 bloque = 0;
                 if(n != 0){
                     printf("digite a data do evento a ser excluido(Dia/Mes/Ano)\n");
@@ -186,10 +189,10 @@ int main(){
                         v = realloc(v, sizeof(struct evento) * (n - 1));
                         n = n - 1;
                         printf("\nEvento deletado com sucesso.\n");
+                        organiza(v, n);
                     }
                     
                 } else {printf("nao ha nada armazenado.\n");}
-                
                 break;
         }
         printf("Se deseja voltar ao menu, digite 0, se deseja sair, digite 1: ");
@@ -215,9 +218,9 @@ void novoEvento(struct evento *novo){//Registra um evento novo
     printf("digite o horario de fim do evento(Horas:Minutos)\n");
     novaHora(&novo->hFim);
     flush_in();
-    printf("\nDigite a descricao do evento: ");
+    printf("\nDigite a descricao do evento(Utilizar underline ao inves de espaco): ");
     gets(novo->descricao);
-    printf("\nDigite o local do evento: ");
+    printf("\nDigite o local do evento(Utilizar underline ao inves de espaco): ");
     gets(novo->local);
     novo->estado.naofoi = 0;
     printf("\nDigite o preco da entrada: ");
@@ -307,7 +310,7 @@ void printaStruct(struct evento *print){//Pinta uma struct e todos os seus dados
         }
     }
     
-    printf("\n--------------------------------------\n\n");
+    printf("\n--------------------------------------\n");
 }
 
 void arquiva(struct evento *guarda, FILE *db){//deposita os dados no arquivo
@@ -393,7 +396,7 @@ int compara(struct evento *a, struct evento *b, int n){//compara com eventos já
     struct evento *i;
     int cont = 0;
     for(i = b; i < b + n; i++){
-        if(a->data.dia == i->data.dia && a->data.mes == i->data.mes && a->data.ano == i->data.ano && a->hInicio.hora == i->hInicio.hora && a->hInicio.minuto == i->hInicio.minuto && a->hFim.hora == i->hFim.hora && a->hFim.minuto == i->hFim.minuto){
+        if(a->data.dia == i->data.dia && a->data.mes == i->data.mes && a->data.ano == i->data.ano && a->hInicio.hora == i->hInicio.hora && a->hInicio.minuto == i->hInicio.minuto && a->hFim.hora == i->hFim.hora && a->hFim.minuto == i->hFim.minuto && strcmp(a->descricao, i->descricao) == 0 && strcmp(a->local, i->local) == 0){
             cont = 1;
         }
     }
